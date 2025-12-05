@@ -1,8 +1,11 @@
-// src/users/usersRoutes.ts
+
 import { Router } from 'express';
 import * as usersController from './usersController';
-import { authenticate } from '../auth/authMiddleware';
+
 import { isAdmin } from '../middleware/roleMiddleware';
+
+
+import { authenticate } from '../auth/authMiddleware';
 
 const router = Router();
 
