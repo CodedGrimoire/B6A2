@@ -6,12 +6,21 @@ import { pool } from '../db';
 export const signup = async (name: string, email: string, password: string, phone: string, role: string) => {
   const hashedPassword = await bcrypt.hash(password, 10);
   
-  const result = await pool.query(
-    'INSERT INTO users (name, email, password, phone, role) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-    [name, email, hashedPassword, phone, role]
-  );
+  try {
+    const result = await pool.query(
+      'INSERT INTO users (name, email, password, phone, role) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [name, email, hashedPassword, phone, role]
+    );
 
-  return result.rows[0];
+    return result.rows[0];
+  } catch (error: any) {
+    // Handle duplicate email error
+    if (error.code === '23505' && error.constraint === 'users_email_key') {
+      throw new Error('Email already exists. Please use a different email or sign in.');
+    }
+    // Re-throw other errors
+    throw error;
+  }
 };
 
 export const signin = async (email: string, password: string) => {

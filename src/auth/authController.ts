@@ -1,31 +1,33 @@
 // src/auth/authController.ts
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import * as authService from './authService';
 
-export const signup = async (req: Request, res: Response) => {
+export const signup = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { name, email, password, phone, role } = req.body;
     const user = await authService.signup(name, email, password, phone, role);
-    res.status(201).json(user);
+    // Exclude password from the response
+    const { password: _, ...userWithoutPassword } = user;
+    res.status(201).json({
+      success: true,
+      message: 'User created successfully',
+      data: userWithoutPassword,
+    });
   } catch (error) {
-    if (error instanceof Error) {
-      res.status(500).json({ error: error.message });
-    } else {
-      res.status(500).json({ error: 'An unknown error occurred.' });
-    }
+    next(error);
   }
 };
 
-export const signin = async (req: Request, res: Response) => {
+export const signin = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
     const { token } = await authService.signin(email, password);
-    res.status(200).json({ token });
+    res.status(200).json({
+      success: true,
+      message: 'Login successful',
+      token,
+    });
   } catch (error) {
-    if (error instanceof Error) {
-      res.status(401).json({ error: error.message });
-    } else {
-      res.status(401).json({ error: 'An unknown error occurred.' });
-    }
+    next(error);
   }
 };

@@ -1,17 +1,20 @@
 import { Pool } from 'pg';
-import dotenv from 'dotenv';
-import path from 'path';
 
-dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
-
+// Create a pool for PostgreSQL connections
 export const pool = new Pool({
-  connectionString: process.env.CONNECTION_STRING,
+  connectionString: process.env.CONNECTION_STRING, // Ensure CONNECTION_STRING is in your .env
 });
 
+// Function to create the tables
 export async function createTables() {
   const client = await pool.connect();
   try {
     console.log('Creating tables...');
+
+    // Begin the SQL transaction for creating tables
+    await client.query('BEGIN'); // This starts a transaction
+
+    // SQL queries to create the tables if they don't exist
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -41,8 +44,17 @@ export async function createTables() {
         status VARCHAR(20) CHECK(status IN ('active', 'cancelled', 'returned')) NOT NULL
       );
     `);
+
     console.log('Tables created successfully!');
+
+    // Commit the transaction
+    await client.query('COMMIT');
+  } catch (error) {
+    // If an error occurs, rollback the transaction
+    console.error('Error creating tables:', error);
+    await client.query('ROLLBACK');
   } finally {
+    // Release the connection back to the pool
     client.release();
   }
 }
