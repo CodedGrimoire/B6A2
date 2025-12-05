@@ -6,12 +6,8 @@ import { isAdmin } from '../middleware/roleMiddleware';
 
 const router = Router();
 
-// All user routes are admin-only
-router.use(authenticate, isAdmin);
-
-router.get('/', usersController.getUsers);
-router.get('/:id', usersController.getUser);
-router.put('/:id', usersController.updateUser);
-router.delete('/:id', usersController.deleteUser);
+router.get('/', authenticate, isAdmin, usersController.getUsers);
+router.put('/:userId', authenticate, usersController.updateUser);
+router.delete('/:userId', authenticate, isAdmin, usersController.deleteUser);
 
 export default router;

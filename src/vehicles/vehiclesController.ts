@@ -1,54 +1,97 @@
 // src/vehicles/vehiclesController.ts
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import * as vehiclesService from './vehiclesService';
 
-export const getVehicles = async (req: Request, res: Response) => {
+export const getVehicles = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const vehicles = await vehiclesService.getAllVehicles();
-    res.status(200).json(vehicles);
+    res.status(200).json({
+      success: true,
+      message: vehicles.length > 0 ? 'Vehicles retrieved successfully' : 'No vehicles found',
+      data: vehicles,
+    });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'An unknown error occurred';
-    res.status(500).json({ error: message });
+    next(error);
   }
 };
-export const getVehicle = async (req: Request, res: Response) => {
+
+export const getVehicle = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const vehicle = await vehiclesService.getVehicleById(Number(req.params.id));
+    const vehicle = await vehiclesService.getVehicleById(Number(req.params.vehicleId));
     if (!vehicle) {
-      return res.status(404).json({ error: 'Vehicle not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'Vehicle not found',
+        errors: 'Vehicle not found',
+      });
     }
-    res.status(200).json(vehicle);
+    res.status(200).json({
+      success: true,
+      message: 'Vehicle retrieved successfully',
+      data: vehicle,
+    });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'An unknown error occurred';
-    res.status(500).json({ error: message });
+    next(error);
   }
 };
-export const addVehicle = async (req: Request, res: Response) => {
+
+export const addVehicle = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { vehicle_name, type, registration_number, daily_rent_price, availability_status } = req.body;
     const vehicle = await vehiclesService.addVehicle(vehicle_name, type, registration_number, daily_rent_price, availability_status);
-    res.status(201).json(vehicle);
+    res.status(201).json({
+      success: true,
+      message: 'Vehicle created successfully',
+      data: vehicle,
+    });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'An unknown error occurred';
-    res.status(500).json({ error: message });
+    next(error);
   }
 };
-export const updateVehicle = async (req: Request, res: Response) => {
+
+export const updateVehicle = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { vehicle_name, daily_rent_price, availability_status } = req.body;
-    const vehicle = await vehiclesService.updateVehicle(Number(req.params.id), vehicle_name, daily_rent_price, availability_status);
-    res.status(200).json(vehicle);
+    const { vehicle_name, type, registration_number, daily_rent_price, availability_status } = req.body;
+    const vehicle = await vehiclesService.updateVehicle(
+      Number(req.params.vehicleId),
+      vehicle_name,
+      type,
+      registration_number,
+      daily_rent_price,
+      availability_status
+    );
+    if (!vehicle) {
+      return res.status(404).json({
+        success: false,
+        message: 'Vehicle not found',
+        errors: 'Vehicle not found',
+      });
+    }
+    res.status(200).json({
+      success: true,
+      message: 'Vehicle updated successfully',
+      data: vehicle,
+    });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'An unknown error occurred';
-    res.status(500).json({ error: message });
+    next(error);
   }
 };
-export const deleteVehicle = async (req: Request, res: Response) => {
+
+export const deleteVehicle = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const vehicle = await vehiclesService.deleteVehicle(Number(req.params.id));
-    res.status(200).json(vehicle);
+    const vehicle = await vehiclesService.deleteVehicle(Number(req.params.vehicleId));
+    if (!vehicle) {
+      return res.status(404).json({
+        success: false,
+        message: 'Vehicle not found',
+        errors: 'Vehicle not found',
+      });
+    }
+    res.status(200).json({
+      success: true,
+      message: 'Vehicle deleted successfully',
+    });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'An unknown error occurred';
-    res.status(500).json({ error: message });
+    next(error);
   }
 };

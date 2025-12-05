@@ -1,20 +1,25 @@
 import { Pool } from 'pg';
 
-// Create a pool for PostgreSQL connections
-export const pool = new Pool({
-  connectionString: process.env.CONNECTION_STRING, // Ensure CONNECTION_STRING is in your .env
-});
 
-// Function to create the tables
-export async function createTables() {
+export const pool = new Pool({
+
+
+  connectionString: process.env.CONNECTION_STRING, });
+
+
+
+export async function createTables() 
+
+
+{
   const client = await pool.connect();
   try {
-    console.log('Creating tables...');
+    console.log('Creating tables.....');
 
-    // Begin the SQL transaction for creating tables
-    await client.query('BEGIN'); // This starts a transaction
+    
+    await client.query('BEGIN'); 
 
-    // SQL queries to create the tables if they don't exist
+    
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -24,6 +29,7 @@ export async function createTables() {
         phone VARCHAR(15) NOT NULL,
         role VARCHAR(10) CHECK(role IN ('admin', 'customer')) NOT NULL
       );
+
 
       CREATE TABLE IF NOT EXISTS vehicles (
         id SERIAL PRIMARY KEY,
@@ -45,16 +51,27 @@ export async function createTables() {
       );
     `);
 
-    console.log('Tables created successfully!');
 
-    // Commit the transaction
+    console.log('Tables created successfully!!!');
+
+    
     await client.query('COMMIT');
-  } catch (error) {
-    // If an error occurs, rollback the transaction
+  }
+  
+  catch (error) 
+  
+  {
+    
     console.error('Error creating tables:', error);
+
+
     await client.query('ROLLBACK');
-  } finally {
-    // Release the connection back to the pool
+  } 
+  
+  finally 
+  
+  {
+  
     client.release();
   }
 }
